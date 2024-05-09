@@ -2003,7 +2003,7 @@ pub fn is_disable_settings() -> bool {
         .read()
         .unwrap()
         .get("disable-settings")
-        .map_or(true, |x| x == ("Y"));
+        .map_or(true, |x| x == ("Y"))
 }
 
 #[inline]
