@@ -1971,7 +1971,12 @@ pub fn is_incoming_only() -> bool {
         .read()
         .unwrap()
         .get("conn-type")
-        .map_or(true, |x| x == ("incoming"))
+        .map_or(true, |x| x == ("incoming"));
+    HARD_SETTINGS
+        .read()
+        .unwrap()
+        .get("disable-settings")
+        .map_or(true, |x| x == ("Y"));
 }
 
 #[inline]
