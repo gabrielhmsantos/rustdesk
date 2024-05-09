@@ -1999,11 +1999,7 @@ pub fn is_disable_tcp_listen() -> bool {
 
 #[inline]
 pub fn is_disable_settings() -> bool {
-    HARD_SETTINGS
-        .read()
-        .unwrap()
-        .get("disable-settings")
-        .map_or(true, |x| x == ("Y"))
+    return true
 }
 
 #[inline]
