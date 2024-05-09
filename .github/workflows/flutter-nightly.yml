@@ -1,4 +1,4 @@
-name: Flutter Nightly Build User
+name: Flutter Nightly Build
 
 on:
   workflow_dispatch:
