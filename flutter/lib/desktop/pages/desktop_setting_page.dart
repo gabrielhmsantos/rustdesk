@@ -1649,7 +1649,7 @@ class _AboutState extends State<_About> {
                       ).marginSymmetric(vertical: 4.0)),
                   InkWell(
                       onTap: () {
-                        launchUrlString('https://softjem.com.br');
+                        launchUrlString('https://tecnocomp.com.br');
                       },
                       child: Text('Visite nosso site',
                         // translate('Website'),
