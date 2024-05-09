@@ -1846,7 +1846,7 @@ pub fn is_custom_client() -> SyncReturn<bool> {
 }
 
 pub fn is_disable_settings() -> SyncReturn<bool> {
-    SyncReturn(true)
+    SyncReturn(config::is_disable_settings())
 }
 
 pub fn is_disable_ab() -> SyncReturn<bool> {
