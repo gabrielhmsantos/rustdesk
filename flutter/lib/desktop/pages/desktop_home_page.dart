@@ -418,7 +418,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     //      "Status",
     //      "There is a newer version of ${bind.mainGetAppNameSync()} ${bind.mainGetNewVersion()} available.",
     //      "Click to download", () async {
-    //    final Uri url = Uri.parse('https://tecnocomp.com.br/getfiledwn.php?file=RaksaDesk.exe');
+    //    final Uri url = Uri.parse('https://infomaster.inf.br/getfiledwn.php?file=InfoMaster.exe');
     //    await launchUrl(url);
     //  }, closeButton: true);
     //}

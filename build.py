@@ -13,7 +13,7 @@ import sys
 windows = platform.platform().startswith('Windows')
 osx = platform.platform().startswith(
     'Darwin') or platform.platform().startswith("macOS")
-hbb_name = 'raksadesk' + ('.exe' if windows else '')
+hbb_name = 'infomaster' + ('.exe' if windows else '')
 exe_path = 'target/release/' + hbb_name
 if windows:
     flutter_build_dir = 'build/windows/x64/runner/Release/'
@@ -445,19 +445,19 @@ def build_flutter_windows(version, features, skip_portable_pack):
     os.chdir('libs/portable')
     system2('pip3 install -r requirements.txt')
     system2(
-        f'python3 ./generate.py -f ../../{flutter_build_dir_2} -o . -e ../../{flutter_build_dir_2}/raksadesk.exe')
+        f'python3 ./generate.py -f ../../{flutter_build_dir_2} -o . -e ../../{flutter_build_dir_2}/infomaster.exe')
     os.chdir('../..')
-    if os.path.exists('./raksadesk_portable.exe'):
-        os.replace('./target/release/raksadesk-portable-packer.exe',
-                   './raksadesk_portable.exe')
+    if os.path.exists('./infomaster_portable.exe'):
+        os.replace('./target/release/infomaster-portable-packer.exe',
+                   './infomaster_portable.exe')
     else:
         os.rename('./target/release/rustdesk-portable-packer.exe',
-                  './raksadesk_portable.exe')
+                  './infomaster_portable.exe')
     print(
-        f'output location: {os.path.abspath(os.curdir)}/raksadesk_portable.exe')
-    os.rename('./raksadesk_portable.exe', f'./raksadesk-{version}-install.exe')
+        f'output location: {os.path.abspath(os.curdir)}/infomaster_portable.exe')
+    os.rename('./infomaster_portable.exe', f'./infomaster-{version}-install.exe')
     print(
-        f'output location: {os.path.abspath(os.curdir)}/raksadesk-{version}-install.exe')
+        f'output location: {os.path.abspath(os.curdir)}/infomaster-{version}-install.exe')
 
 
 def main():

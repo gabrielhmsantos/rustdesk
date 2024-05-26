@@ -33,7 +33,7 @@ class SettingsPage extends StatefulWidget implements PageShape {
   State<SettingsPage> createState() => _SettingsState();
 }
 
-const url = 'https://tecnocomp.com.br';
+const url = 'https://infomaster.inf.br';
 
 class _SettingsState extends State<SettingsPage> with WidgetsBindingObserver {
   final _hasIgnoreBattery = androidVersion >= 26;
@@ -400,7 +400,7 @@ class _SettingsState extends State<SettingsPage> with WidgetsBindingObserver {
               title: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(translate('Keep RaksaDesk background service')),
+                    Text(translate('Keep InfoMaster background service')),
                     Text('* ${translate('Ignore Battery Optimizations')}',
                         style: Theme.of(context).textTheme.bodySmall),
                   ]),
@@ -565,7 +565,7 @@ class _SettingsState extends State<SettingsPage> with WidgetsBindingObserver {
                 title: Text(translate("Version: ") + version),
                 value: Padding(
                   padding: EdgeInsets.symmetric(vertical: 8),
-                  child: Text('tecnocomp.com.br',
+                  child: Text('infomaster.inf.br',
                       style: TextStyle(
                         decoration: TextDecoration.underline,
                       )),
@@ -698,19 +698,19 @@ void showThemeSettings(OverlayDialogManager dialogManager) async {
 void showAbout(OverlayDialogManager dialogManager) {
   dialogManager.show((setState, close, context) {
     return CustomAlertDialog(
-      title: Text('${translate('About')} RaksaDesk'),
+      title: Text('${translate('About')} InfoMaster'),
       content: Wrap(direction: Axis.vertical, spacing: 12, children: [
         Text('Version: $version'),
         InkWell(
             onTap: () async {
-              const url = 'https://tecnocomp.com.br/';
+              const url = 'https://infomaster.inf.br/';
               if (await canLaunchUrl(Uri.parse(url))) {
                 await launchUrl(Uri.parse(url));
               }
             },
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
-              child: Text('tecnocomp.com.br',
+              child: Text('infomaster.inf.br',
                   style: TextStyle(
                     decoration: TextDecoration.underline,
                   )),

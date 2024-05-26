@@ -1,9 +1,9 @@
 [Desktop Entry]
-Name=RaksaDesk
+Name=IPMRmt
 GenericName=Remote Desktop
 Comment=Remote Desktop
-Exec=raksadesk %u
-Icon=raksadesk
+Exec=ipmrmt %u
+Icon=ipmrmt
 Terminal=false
 Type=Application
 StartupNotify=true
@@ -15,4 +15,4 @@ X-Desktop-File-Install-Version=0.23
 
 [Desktop Action new-window]
 Name=Open a New Window
-Exec=raksadesk %u
+Exec=ipmrmt %u

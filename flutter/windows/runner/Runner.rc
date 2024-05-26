@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "Tecnocomp Tecnologia e Serviços" "\0"
-            VALUE "FileDescription", "RaksaDesk Remote Desktop" "\0"
+            VALUE "CompanyName", "InfoMaster Sistemas" "\0"
+            VALUE "FileDescription", "InfoMaster Remote Desktop" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "raksadesk" "\0"
-            VALUE "LegalCopyright", "Copyright © 2024 Tecnocomp Tecnologia e Serviços" "\0"
-            VALUE "OriginalFilename", "raksadesk.exe" "\0"
-            VALUE "ProductName", "RaksaDesk" "\0"
+            VALUE "InternalName", "infomaster" "\0"
+            VALUE "LegalCopyright", "Copyright © 2024 InfoMaster Sistemas" "\0"
+            VALUE "OriginalFilename", "infomaster.exe" "\0"
+            VALUE "ProductName", "InfoMaster" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

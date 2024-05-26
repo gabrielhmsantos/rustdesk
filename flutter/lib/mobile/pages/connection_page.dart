@@ -393,7 +393,7 @@ class _WebMenuState extends State<WebMenu> {
               [
                 PopupMenuItem(
                   value: "about",
-                  child: Text('${translate('About')} RaksaDesk'),
+                  child: Text('${translate('About')} InfoMaster'),
                 )
               ];
         },

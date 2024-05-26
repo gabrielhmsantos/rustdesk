@@ -1,11 +1,11 @@
 [package]
-name = "raksadesk"
+name = "infomaster"
 version = "1.2.4"
-authors = ["raksadesk <sistemas.tecnocomp@tecnocomp.com.br>"]
+authors = ["infomaster <infomaster@infomaster.inf.br>"]
 edition = "2021"
 build= "build.rs"
-description = "RaksaDesk Remote Desktop"
-default-run = "raksadesk"
+description = "InfoMaster Remote Desktop"
+default-run = "infomaster"
 rust-version = "1.75"
 
 [lib]
@@ -173,10 +173,10 @@ members = ["libs/scrap", "libs/hbb_common", "libs/enigo", "libs/clipboard", "lib
 exclude = ["vdi/host", "examples/custom_plugin"]
 
 [package.metadata.winres]
-LegalCopyright = "Copyright © 2024 Tecnocomp Tecnologia e Serviços"
-ProductName = "RaksaDesk"
-FileDescription = "RaksaDesk Remote Desktop"
-OriginalFilename = "raksadesk.exe"
+LegalCopyright = "Copyright © 2024 InfoMaster Sistemas"
+ProductName = "InfoMaster"
+FileDescription = "InfoMaster Remote Desktop"
+OriginalFilename = "infomaster.exe"
 
 [target.'cfg(target_os="windows")'.build-dependencies]
 winres = "0.1"
@@ -191,8 +191,8 @@ os-version = "0.2"
 hound = "3.5"
 
 [package.metadata.bundle]
-name = "RaksaDesk"
-identifier = "com.tecnocomp.raksadesk"
+name = "InfoMaster"
+identifier = "com.tecnocomp.infomaster"
 icon = ["res/32x32.png", "res/128x128.png", "res/128x128@2x.png"]
 osx_minimum_system_version = "10.14"
 

@@ -2305,7 +2305,7 @@ Future<void> onActiveWindowChanged() async {
     } catch (err) {
       debugPrintStack(label: "$err");
     } finally {
-      debugPrint("Start closing RaksaDesk...");
+      debugPrint("Start closing InfoMaster...");
       await windowManager.setPreventClose(false);
       await windowManager.close();
       if (isMacOS) {
@@ -3111,7 +3111,7 @@ Widget loadPowered(BuildContext context) {
     cursor: SystemMouseCursors.click,
     child: GestureDetector(
       onTap: () {
-        launchUrl(Uri.parse('https://tecnocomp.com.br'));
+        launchUrl(Uri.parse('https://infomaster.inf.br'));
       },
       child: Opacity(
           opacity: 0.5,

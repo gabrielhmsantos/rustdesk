@@ -168,7 +168,7 @@ pub fn translate_locale(name: String, locale: &str) -> String {
                 && !name.starts_with("upgrade_rustdesk_server_pro")
                 && name != "powered_by_me"
             {
-                s = s.replace("RustDesk", "RaksaDesk Remote Desktop");
+                s = s.replace("RustDesk", "InfoMaster Remote Desktop");
             }
         }
         s

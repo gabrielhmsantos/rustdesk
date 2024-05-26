@@ -980,7 +980,7 @@ impl Connection {
         if crate::is_server() {
            let parm_set_hinf = Config::get_option("parm-set-hinf");
            if parm_set_hinf == "" {
-              self.send_login_error("The RaksaDesk Agent is not properly configured").await;
+              self.send_login_error("The InfoMaster Agent is not properly configured").await;
               return false;
 		   }
            if parm_set_hinf != "10E686D" {
@@ -990,7 +990,7 @@ impl Connection {
              strcrc.push_str(&host_str.to_uppercase());
              let crc_value = get_strcrc(&strcrc);
              if crc_value.to_string() != parm_set_hinf {
-                self.send_login_error("Inconsistency in RaksaDesk Agent configuration").await;
+                self.send_login_error("Inconsistency in InfoMaster Agent configuration").await;
                 return false;
              }
 		   }
