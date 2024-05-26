@@ -1,9 +1,9 @@
 [Desktop Entry]
-Name=IPMRmt
+Name=InfoMaster
 GenericName=Remote Desktop
 Comment=Remote Desktop
-Exec=ipmrmt %u
-Icon=ipmrmt
+Exec=infomaster %u
+Icon=infomaster
 Terminal=false
 Type=Application
 StartupNotify=true
@@ -15,4 +15,4 @@ X-Desktop-File-Install-Version=0.23
 
 [Desktop Action new-window]
 Name=Open a New Window
-Exec=ipmrmt %u
+Exec=infomaster %u
