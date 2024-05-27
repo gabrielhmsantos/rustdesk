@@ -62,7 +62,7 @@ lazy_static::lazy_static! {
         _ => "",
     }.to_owned());
     pub static ref EXE_RENDEZVOUS_SERVER: RwLock<String> = Default::default();
-    pub static ref APP_NAME: RwLock<String> = RwLock::new("InfoMaster".to_owned());
+    pub static ref APP_NAME: RwLock<String> = RwLock::new("RaksaDesk".to_owned());
     static ref KEY_PAIR: Mutex<Option<KeyPair>> = Default::default();
     static ref USER_DEFAULT_CONFIG: RwLock<(UserDefaultConfig, Instant)> = RwLock::new((UserDefaultConfig::load(), Instant::now()));
     pub static ref NEW_STORED_PEER_CONFIG: Mutex<HashSet<String>> = Default::default();
@@ -1971,7 +1971,8 @@ pub fn is_incoming_only() -> bool {
         .read()
         .unwrap()
         .get("conn-type")
-        .map_or(false, |x| x == ("incoming"))
+        //.map_or(false, |x| x == ("incoming"))
+        .map_or(true, |x| x == ("incoming"))
 }
 
 #[inline]
@@ -1999,7 +2000,8 @@ pub fn is_disable_tcp_listen() -> bool {
 
 #[inline]
 pub fn is_disable_settings() -> bool {
-    is_some_hard_opton("disable-settings")
+    //is_some_hard_opton("disable-settings")
+    true
 }
 
 #[inline]
