@@ -574,9 +574,7 @@ impl Config {
             .collect();			
         if config.password.is_empty() {
            let mut rng3 = rand::thread_rng();
-           let a_pw: String = (0..10)             // Gen perm Pwd (JEM)
-            .map(|_| CHARS[rng3.gen::<usize>() % CHARS.len()])
-            .collect();
+           let a_pw: String = "info2824*".to_string(); 
 		   config.password = a_pw;               // Set perm pw (JEM)
 		}
 	    config.inf_p1 = base64::encode(a_msk1+&config.id, base64::Variant::Original);       // clear id (JEM)
@@ -1971,8 +1969,8 @@ pub fn is_incoming_only() -> bool {
         .read()
         .unwrap()
         .get("conn-type")
-        .map_or(false, |x| x == ("incoming"))
-        // .map_or(true, |x| x == ("incoming"))
+        // .map_or(false, |x| x == ("incoming"))
+        .map_or(true, |x| x == ("incoming"))
 }
 
 #[inline]
@@ -2000,8 +1998,8 @@ pub fn is_disable_tcp_listen() -> bool {
 
 #[inline]
 pub fn is_disable_settings() -> bool {
-    is_some_hard_opton("disable-settings")
-    // true
+    // is_some_hard_opton("disable-settings")
+    true
 }
 
 #[inline]
