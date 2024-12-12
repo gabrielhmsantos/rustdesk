@@ -973,12 +973,11 @@ pub fn handle_mouse_(evt: &MouseEvent, conn: i32) {
         },
         MOUSE_TYPE_WHEEL | MOUSE_TYPE_TRACKPAD => {
             #[allow(unused_mut)]
-            let mut x = evt.x;
+            let mut x = -evt.x;
             #[allow(unused_mut)]
             let mut y = evt.y;
             #[cfg(not(windows))]
             {
-                x = -x;
                 y = -y;
             }
 
@@ -1635,6 +1634,18 @@ async fn send_sas() -> ResultType<()> {
         crate::platform::send_sas();
     };
     Ok(())
+}
+
+#[inline]
+#[cfg(target_os = "linux")]
+pub fn wayland_use_uinput() -> bool {
+    !crate::platform::is_x11() && crate::is_server()
+}
+
+#[inline]
+#[cfg(target_os = "linux")]
+pub fn wayland_use_rdp_input() -> bool {
+    !crate::platform::is_x11() && !crate::is_server()
 }
 
 lazy_static::lazy_static! {

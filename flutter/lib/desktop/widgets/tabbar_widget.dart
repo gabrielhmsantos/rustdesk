@@ -227,8 +227,7 @@ typedef TabMenuBuilder = Widget Function(String key);
 typedef LabelGetter = Rx<String> Function(String key);
 
 /// [_lastClickTime], help to handle double click
-int _lastClickTime =
-    DateTime.now().millisecondsSinceEpoch - bind.getDoubleClickTime() - 1000;
+int _lastClickTime = 0;
 
 class DesktopTab extends StatefulWidget {
   final bool showLogo;
@@ -506,17 +505,20 @@ class _DesktopTabState extends State<DesktopTab>
       Obx(() {
         if (stateGlobal.showTabBar.isTrue &&
             !(kUseCompatibleUiMode && isHideSingleItem())) {
+          final showBottomDivider = _showTabBarBottomDivider(tabType);
           return SizedBox(
             height: _kTabBarHeight,
             child: Column(
               children: [
                 SizedBox(
-                  height: _kTabBarHeight - 1,
+                  height:
+                      showBottomDivider ? _kTabBarHeight - 1 : _kTabBarHeight,
                   child: _buildBar(),
                 ),
-                const Divider(
-                  height: 1,
-                ),
+                if (showBottomDivider)
+                  const Divider(
+                    height: 1,
+                  ),
               ],
             ),
           );
@@ -727,16 +729,6 @@ class WindowActionPanel extends StatefulWidget {
 }
 
 class WindowActionPanelState extends State<WindowActionPanel> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
   bool showTabDowndown() {
     return widget.tabController.state.value.tabs.length > 1 &&
         (widget.tabController.tabType == DesktopTabType.remoteScreen ||
@@ -1172,7 +1164,10 @@ class _TabState extends State<_Tab> with RestorationMixin {
               child: Row(
                 children: [
                   SizedBox(
-                      height: _kTabBarHeight,
+                      // _kTabBarHeight also displays normally
+                      height: _showTabBarBottomDivider(widget.tabType)
+                          ? _kTabBarHeight - 1
+                          : _kTabBarHeight,
                       child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
@@ -1271,13 +1266,7 @@ class ActionIcon extends StatefulWidget {
 }
 
 class _ActionIconState extends State<ActionIcon> {
-  var hover = false.obs;
-
-  @override
-  void initState() {
-    super.initState();
-    hover.value = false;
-  }
+  final hover = false.obs;
 
   @override
   Widget build(BuildContext context) {
@@ -1429,6 +1418,10 @@ class _TabDropDownButtonState extends State<_TabDropDownButton> {
       },
     );
   }
+}
+
+bool _showTabBarBottomDivider(DesktopTabType tabType) {
+  return tabType == DesktopTabType.main || tabType == DesktopTabType.install;
 }
 
 class TabbarTheme extends ThemeExtension<TabbarTheme> {
