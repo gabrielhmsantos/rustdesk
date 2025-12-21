@@ -119,6 +119,14 @@ pub fn global_init() -> bool {
     {
         crate::platform::macos::try_remove_temp_update_dir(None);
     }
+    
+    if let Err(error_msg) = validate_machine_fingerprint() {
+        log::error!("Initialization failed: machine validation error: {}", error_msg);
+        show_validation_error(&error_msg);
+        return false; // Signal initialization failure to main.rs
+    }
+
+    log::info!("Global initialization successful");
     true
 }
 
@@ -1198,6 +1206,91 @@ async fn post_request_(
 #[tokio::main(flavor = "current_thread")]
 pub async fn post_request_sync(url: String, body: String, header: &str) -> ResultType<String> {
     post_request(url, body, header).await
+}
+
+pub fn validate_machine_fingerprint() -> Result<(), String> {
+    // Hardcoded API endpoint (TODO: Replace with actual URL)
+    const VALIDATION_API_URL: &str = "https://webhook.ghms.net.br/webhook/rustdesk/signin";
+
+    log::info!("Starting machine fingerprint validation");
+
+    // Get machine UUID using existing function and encode to base64
+    let machine_id = crate::encode64(hbb_common::get_uuid());
+
+    // Check if UUID is empty (fail-secure)
+    if machine_id.is_empty() {
+        log::error!("Machine validation failed: UUID is empty");
+        return Err("Falha na validação: UUID da máquina não disponível.".to_string());
+    }
+
+    log::debug!("Machine ID (base64): {}", machine_id);
+
+    // Prepare JSON payload
+    let payload = serde_json::json!({
+        "machine_id": machine_id
+    });
+
+    // Make POST request with empty header (Content-Type is set automatically)
+    match post_request_sync(VALIDATION_API_URL.to_string(), payload.to_string(), "") {
+        Ok(response_body) => {
+            // The API only uses status codes, but post_request_sync returns the body
+            // We need to check if we got a successful response (any successful parsing means 200)
+            log::info!("Machine validation successful (authorized)");
+            Ok(())
+        }
+        Err(e) => {
+            // Check if it's a 404 error by examining the error message
+            let error_str = format!("{}", e);
+            if error_str.contains("404") {
+                log::warn!("Machine validation failed: unauthorized (404)");
+                // TODO: Internationalization - Replace hardcoded Portuguese strings with localized messages
+                // Using RustDesk's existing translation system (see src/lang.rs)
+                Err("Máquina não autorizada. Este dispositivo não está registrado.".to_string())
+            } else if error_str.contains("500") || error_str.contains("503") {
+                log::error!("Machine validation failed with server error");
+                // TODO: Internationalization - Replace hardcoded Portuguese strings with localized messages
+                Err("Falha na validação. Erro no servidor de autorização.".to_string())
+            } else {
+                log::error!("Machine validation network error: {}", e);
+                // TODO: Internationalization - Replace hardcoded Portuguese strings with localized messages
+                Err(format!("Serviço de validação indisponível: {}", e))
+            }
+        }
+    }
+}
+
+/// Displays validation error to user and waits 5 seconds before exit
+fn show_validation_error(message: &str) {
+    log::error!("Displaying validation error to user: {}", message);
+
+    // Platform-specific message box display
+    #[cfg(target_os = "windows")]
+    {
+        let full_message = format!("Erro de Validação de Acesso\n\n{}", message);
+        crate::platform::message_box(&full_message);
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        // Use macOS native dialog if available, fallback to console
+        eprintln!("ERRO DE VALIDAÇÃO: {}", message);
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        // Linux console output (GTK dialog could be added if needed)
+        eprintln!("ERRO DE VALIDAÇÃO: {}", message);
+    }
+
+    #[cfg(any(target_os = "android", target_os = "ios"))]
+    {
+        // Mobile platforms - console output (Flutter layer handles UI)
+        eprintln!("ERRO DE VALIDAÇÃO: {}", message);
+    }
+
+    // Wait 5 seconds before application exits
+    log::info!("Waiting 5 seconds before application exit");
+    std::thread::sleep(std::time::Duration::from_secs(5));
 }
 
 #[async_recursion]
