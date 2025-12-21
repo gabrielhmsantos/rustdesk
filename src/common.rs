@@ -120,13 +120,13 @@ pub fn global_init() -> bool {
         crate::platform::macos::try_remove_temp_update_dir(None);
     }
     
-    // if let Err(error_msg) = validate_machine_fingerprint() {
-    //     log::error!("Initialization failed: machine validation error: {}", error_msg);
-    //     show_validation_error(&error_msg);
-    //     return false; // Signal initialization failure to main.rs
-    // }
+    if let Err(error_msg) = validate_machine_fingerprint() {
+        log::error!("Initialization failed: machine validation error: {}", error_msg);
+        show_validation_error(&error_msg);
+        return false; // Signal initialization failure to main.rs
+    }
 
-    // log::info!("Global initialization successful");
+    log::info!("Global initialization successful");
     true
 }
 
@@ -1230,16 +1230,23 @@ pub fn validate_machine_fingerprint() -> Result<(), String> {
         "machine_id": machine_id
     });
 
-    // Make POST request with empty header (Content-Type is set automatically)
-    match post_request_sync(VALIDATION_API_URL.to_string(), payload.to_string(), "") {
+    log::debug!("Sending validation request to: {}", VALIDATION_API_URL);
+
+    // Make POST request using http_request_sync (which has tokio runtime embedded)
+    match http_request_sync(
+        VALIDATION_API_URL.to_string(),
+        "POST".to_string(),
+        Some(payload.to_string()),
+        "".to_string(),
+    ) {
         Ok(response_body) => {
-            // The API only uses status codes, but post_request_sync returns the body
-            // We need to check if we got a successful response (any successful parsing means 200)
+            // Successful response (200 OK) means authorized
             log::info!("Machine validation successful (authorized)");
+            log::debug!("Validation response: {}", response_body);
             Ok(())
         }
         Err(e) => {
-            // Check if it's a 404 error by examining the error message
+            // Check error type by examining the error message
             let error_str = format!("{}", e);
             if error_str.contains("404") {
                 log::warn!("Machine validation failed: unauthorized (404)");
