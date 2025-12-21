@@ -1431,7 +1431,8 @@ fn show_validation_error(message: &str) {
     // Platform-specific message box display
     #[cfg(target_os = "windows")]
     {
-        crate::platform::message_box("Erro de Validação de Acesso", message);
+        let full_message = format!("Erro de Validação de Acesso\n\n{}", message);
+        crate::platform::message_box(&full_message);
     }
 
     #[cfg(target_os = "macos")]
