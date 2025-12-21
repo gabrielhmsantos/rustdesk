@@ -120,13 +120,13 @@ pub fn global_init() -> bool {
         crate::platform::macos::try_remove_temp_update_dir(None);
     }
     
-    if let Err(error_msg) = validate_machine_fingerprint() {
-        log::error!("Initialization failed: machine validation error: {}", error_msg);
-        show_validation_error(&error_msg);
-        return false; // Signal initialization failure to main.rs
-    }
+    // if let Err(error_msg) = validate_machine_fingerprint() {
+    //     log::error!("Initialization failed: machine validation error: {}", error_msg);
+    //     show_validation_error(&error_msg);
+    //     return false; // Signal initialization failure to main.rs
+    // }
 
-    log::info!("Global initialization successful");
+    // log::info!("Global initialization successful");
     true
 }
 
