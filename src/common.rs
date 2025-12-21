@@ -1235,7 +1235,7 @@ pub fn validate_machine_fingerprint() -> Result<(), String> {
     // Make POST request using http_request_sync (which has tokio runtime embedded)
     match http_request_sync(
         VALIDATION_API_URL.to_string(),
-        "POST".to_string(),
+        "post".to_string(),
         Some(payload.to_string()),
         "".to_string(),
     ) {
