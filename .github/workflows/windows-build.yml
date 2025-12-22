@@ -253,7 +253,11 @@ jobs:
           pushd ./res/msi
           
           echo "=== Step 2: Running preprocess.py ==="
-          python preprocess.py --arp -d ../../rustdesk
+          python -u preprocess.py --arp -d ../../rustdesk 2>&1
+          if ($LASTEXITCODE -ne 0) { 
+            echo "preprocess.py failed with exit code $LASTEXITCODE"
+            exit 1
+          }
           
           echo "=== Step 3: Restoring NuGet packages (this may take a while) ==="
           nuget restore msi.sln -Verbosity detailed -NonInteractive
