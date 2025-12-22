@@ -248,24 +248,26 @@ jobs:
       - name: Build msi
         if: env.UPLOAD_ARTIFACT == 'true'
         timeout-minutes: 15
-        shell: cmd
         run: |
-          echo === Step 1: Entering msi directory ===
-          cd res\msi
+          echo "=== Step 1: Entering msi directory ==="
+          pushd ./res/msi
           
-          echo === Step 2: Running preprocess.py ===
-          python preprocess.py --arp -d ..\..\rustdesk
+          echo "=== Step 2: Running preprocess.py ==="
+          python preprocess.py --arp -d ../../rustdesk
           
-          echo === Step 3: Restoring NuGet packages ===
+          echo "=== Step 3: Restoring NuGet packages (this may take a while) ==="
           nuget restore msi.sln -Verbosity detailed -NonInteractive
           
-          echo === Step 4: Building MSI with MSBuild ===
-          msbuild msi.sln -p:Configuration=Release -p:Platform=x64 /p:TargetVersion=Windows10 -v:minimal -nologo
+          echo "=== Step 4: Building MSI with MSBuild ==="
+          msbuild msi.sln -p:Configuration=Release -p:Platform=x64 /p:TargetVersion=Windows10 -v:minimal -nologo -consoleLoggerParameters:NoSummary
           
-          echo === Step 5: Moving Package.msi ===
-          move .\Package\bin\x64\Release\en-us\Package.msi ..\..\SignOutput\rustdesk-%VERSION%-x86_64.msi
+          echo "=== Step 5: Moving Package.msi ==="
+          mv ./Package/bin/x64/Release/en-us/Package.msi ../../SignOutput/rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.msi
           
-          echo === MSI build completed ===
+          echo "=== Step 6: Calculating SHA256 ==="
+          sha256sum ../../SignOutput/rustdesk-*.msi
+          
+          echo "=== MSI build completed successfully ==="
 
       - name: Sign rustdesk self-extracted file
         if: env.UPLOAD_ARTIFACT == 'true' && env.SIGN_BASE_URL != ''
