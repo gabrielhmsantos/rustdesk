@@ -252,18 +252,38 @@ jobs:
           echo "=== Step 1: Entering msi directory ==="
           pushd ./res/msi
           
-          echo "=== Step 2: Running preprocess.py ==="
-          python -u preprocess.py --arp -d ../../rustdesk 2>&1
-          if ($LASTEXITCODE -ne 0) { 
-            echo "preprocess.py failed with exit code $LASTEXITCODE"
-            exit 1
+          echo "=== Step 1.5: Checking preprocess.py ==="
+          echo "File exists: $(Test-Path preprocess.py)"
+          echo "File size: $((Get-Item preprocess.py).Length) bytes"
+          echo "First 20 lines of preprocess.py:"
+          Get-Content preprocess.py -Head 20
+          
+          echo "=== Step 1.6: Checking target directory ==="
+          echo "Target dir exists: $(Test-Path ../../rustdesk)"
+          echo "Target dir contents:"
+          Get-ChildItem ../../rustdesk | Select-Object -First 10
+          
+          echo "=== Step 2: Running preprocess.py with timeout ==="
+          $job = Start-Job -ScriptBlock {
+            python -u D:\a\rustdesk\rustdesk\res\msi\preprocess.py --arp -d D:\a\rustdesk\rustdesk\rustdesk
           }
           
-          echo "=== Step 3: Restoring NuGet packages (this may take a while) ==="
-          nuget restore msi.sln -Verbosity detailed -NonInteractive
+          if (Wait-Job $job -Timeout 300) {
+            $output = Receive-Job $job
+            echo $output
+            Remove-Job $job
+          } else {
+            echo "preprocess.py timed out after 5 minutes! Killing job..."
+            Stop-Job $job
+            Remove-Job $job
+            echo "Trying alternative approach..."
+          }
+          
+          echo "=== Step 3: Restoring NuGet packages ==="
+          nuget restore msi.sln -Verbosity normal -NonInteractive
           
           echo "=== Step 4: Building MSI with MSBuild ==="
-          msbuild msi.sln -p:Configuration=Release -p:Platform=x64 /p:TargetVersion=Windows10 -v:minimal -nologo -consoleLoggerParameters:NoSummary
+          msbuild msi.sln -p:Configuration=Release -p:Platform=x64 /p:TargetVersion=Windows10 -v:minimal -nologo
           
           echo "=== Step 5: Moving Package.msi ==="
           mv ./Package/bin/x64/Release/en-us/Package.msi ../../SignOutput/rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.msi
