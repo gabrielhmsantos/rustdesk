@@ -57,5 +57,6 @@ libsciter.dylib
 flutter/web/
 
 .specify
-specs
 .claude
+specs
+MANUAL_CUSTOMIZATION.md
