@@ -247,7 +247,6 @@ jobs:
 
       - name: Build msi
         if: env.UPLOAD_ARTIFACT == 'true'
-        timeout-minutes: 15
         run: |
           echo "=== Entering msi directory ==="
           pushd ./res/msi
