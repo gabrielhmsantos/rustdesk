@@ -40,6 +40,7 @@ lazy_static::lazy_static! {
 }
 static SHOULD_EXIT: AtomicBool = AtomicBool::new(false);
 static MANUAL_RESTARTED: AtomicBool = AtomicBool::new(false);
+static VALIDATION_FAILED: AtomicBool = AtomicBool::new(false);
 
 #[derive(Clone)]
 pub struct RendezvousMediator {
@@ -93,6 +94,12 @@ impl RendezvousMediator {
         }
         scrap::codec::test_av1();
         loop {
+            // Check if validation failed - don't retry connection attempts
+            if VALIDATION_FAILED.load(Ordering::SeqCst) {
+                log::info!("Fingerprint validation failed, stopping rendezvous connection attempts");
+                break;
+            }
+
             let timeout = Arc::new(RwLock::new(CONNECT_TIMEOUT));
             let conn_start_time = Instant::now();
             *SOLVING_PK_MISMATCH.lock().await = "".to_owned();
@@ -646,6 +653,13 @@ impl RendezvousMediator {
         // This ensures only authorized devices can connect to rendezvous server
         if let Err(e) = crate::common::validate_machine_fingerprint().await {
             log::error!("Rendezvous registration blocked: fingerprint validation failed - {}", e);
+
+            // Show error dialog to user
+            crate::common::show_validation_error(&e);
+
+            // Set flag to prevent retry loop from continuing
+            VALIDATION_FAILED.store(true, Ordering::SeqCst);
+
             return Err(anyhow::anyhow!("Machine not authorized: {}", e).into());
         }
         log::info!("Machine fingerprint validation successful, proceeding with registration");

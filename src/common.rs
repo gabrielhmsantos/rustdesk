@@ -1431,7 +1431,7 @@ pub async fn validate_machine_fingerprint() -> Result<(), String> {
 }
 
 /// Displays validation error to user and waits 5 seconds before exit
-fn show_validation_error(message: &str) {
+pub fn show_validation_error(message: &str) {
     log::error!("Displaying validation error to user: {}", message);
 
     // Platform-specific message box display
