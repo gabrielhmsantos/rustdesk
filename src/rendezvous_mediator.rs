@@ -642,6 +642,14 @@ impl RendezvousMediator {
     }
 
     async fn register_pk(&mut self, socket: Sink<'_>) -> ResultType<()> {
+        // Validate machine fingerprint before registering public key
+        // This ensures only authorized devices can connect to rendezvous server
+        if let Err(e) = crate::common::validate_machine_fingerprint().await {
+            log::error!("Rendezvous registration blocked: fingerprint validation failed - {}", e);
+            return Err(anyhow::anyhow!("Machine not authorized: {}", e).into());
+        }
+        log::info!("Machine fingerprint validation successful, proceeding with registration");
+
         let mut msg_out = Message::new();
         let pk = Config::get_key_pair().1;
         let uuid = hbb_common::get_uuid();
