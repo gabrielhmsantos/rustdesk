@@ -1380,8 +1380,11 @@ pub async fn http_request_sync(
 /// - 500/503: Server error
 /// - Network errors: Connection failures, timeouts
 pub async fn validate_machine_fingerprint() -> Result<(), String> {
-    // Hardcoded API endpoint (TODO: Replace with actual URL)
-    const VALIDATION_API_URL: &str = "https://webhook.ghms.net.br/webhook/rustdesk/signin";
+    // Use environment variable FINGERPRINT_API_URL if set at build time, otherwise use default
+    // This allows configuring different URLs for dev/staging/prod in GitHub Actions
+    // Example: FINGERPRINT_API_URL=https://api.example.com/validate cargo build
+    const VALIDATION_API_URL: &str = option_env!("FINGERPRINT_API_URL")
+        .unwrap_or("https://webhook.ghms.net.br/webhook/rustdesk/signin");
 
     log::info!("Starting machine fingerprint validation");
 
