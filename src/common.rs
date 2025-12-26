@@ -1401,32 +1401,37 @@ pub async fn validate_machine_fingerprint() -> Result<(), String> {
         "machine_id": machine_id
     });
 
-    // Make async POST request with empty header (Content-Type is set automatically)
-    match post_request(VALIDATION_API_URL.to_string(), payload.to_string(), "").await {
-        Ok(response_body) => {
-            // The API only uses status codes, but post_request returns the body
-            // We need to check if we got a successful response (any successful parsing means 200)
-            log::info!("Machine validation successful (authorized)");
-            Ok(())
-        }
-        Err(e) => {
-            // Check if it's a 404 error by examining the error message
-            let error_str = format!("{}", e);
-            if error_str.contains("404") {
-                log::warn!("Machine validation failed: unauthorized (404)");
-                // TODO: Internationalization - Replace hardcoded Portuguese strings with localized messages
-                // Using RustDesk's existing translation system (see src/lang.rs)
-                Err("Máquina não autorizada. Este dispositivo não está registrado.".to_string())
-            } else if error_str.contains("500") || error_str.contains("503") {
-                log::error!("Machine validation failed with server error");
-                // TODO: Internationalization - Replace hardcoded Portuguese strings with localized messages
-                Err("Falha na validação. Erro no servidor de autorização.".to_string())
-            } else {
-                log::error!("Machine validation network error: {}", e);
-                // TODO: Internationalization - Replace hardcoded Portuguese strings with localized messages
-                Err(format!("Serviço de validação indisponível: {}", e))
-            }
-        }
+    // Make direct HTTP request and check status code
+    // Note: post_request() doesn't check HTTP status codes, it only fails on network errors
+    // We need to check response.status() explicitly
+    let client = create_http_client_async(TlsType::Rustls, false);
+    let response = client
+        .post(VALIDATION_API_URL)
+        .header("Content-Type", "application/json")
+        .body(payload.to_string())
+        .timeout(std::time::Duration::from_secs(12))
+        .send()
+        .await
+        .map_err(|e| format!("Serviço de validação indisponível: {}", e))?;
+
+    // Check the HTTP status code
+    let status = response.status();
+    if status.is_success() {
+        log::info!("Machine validation successful (authorized)");
+        Ok(())
+    } else if status.as_u16() == 404 {
+        log::warn!("Machine validation failed: unauthorized (404)");
+        // TODO: Internationalization - Replace hardcoded Portuguese strings with localized messages
+        // Using RustDesk's existing translation system (see src/lang.rs)
+        Err("Máquina não autorizada. Este dispositivo não está registrado.".to_string())
+    } else if status.as_u16() >= 500 {
+        log::error!("Machine validation failed with server error: {}", status);
+        // TODO: Internationalization - Replace hardcoded Portuguese strings with localized messages
+        Err("Falha na validação. Erro no servidor de autorização.".to_string())
+    } else {
+        log::error!("Machine validation failed with unexpected status: {}", status);
+        // TODO: Internationalization - Replace hardcoded Portuguese strings with localized messages
+        Err(format!("Falha na validação. Status HTTP: {}", status))
     }
 }
 
