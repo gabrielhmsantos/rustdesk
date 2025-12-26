@@ -1380,12 +1380,6 @@ pub async fn http_request_sync(
 /// - 500/503: Server error
 /// - Network errors: Connection failures, timeouts
 pub async fn validate_machine_fingerprint() -> Result<(), String> {
-    // Use environment variable FINGERPRINT_API_URL if set at build time, otherwise use default
-    // This allows configuring different URLs for dev/staging/prod in GitHub Actions
-    // Example: FINGERPRINT_API_URL=https://api.example.com/validate cargo build
-    const VALIDATION_API_URL: &str = option_env!("FINGERPRINT_API_URL")
-        .unwrap_or("https://webhook.ghms.net.br/webhook/rustdesk/signin");
-
     log::info!("Starting machine fingerprint validation");
 
     // Get machine UUID using existing function and encode to base64
@@ -1404,12 +1398,18 @@ pub async fn validate_machine_fingerprint() -> Result<(), String> {
         "machine_id": machine_id
     });
 
+    // Use environment variable FINGERPRINT_API_URL if set at build time, otherwise use default
+    // This allows configuring different URLs for dev/staging/prod in GitHub Actions
+    // Example: FINGERPRINT_API_URL=https://api.example.com/validate cargo build
+    let validation_api_url = option_env!("FINGERPRINT_API_URL")
+        .unwrap_or("https://webhook.ghms.net.br/webhook/rustdesk/signin");
+
     // Make direct HTTP request and check status code
     // Note: post_request() doesn't check HTTP status codes, it only fails on network errors
     // We need to check response.status() explicitly
     let client = create_http_client_async(TlsType::Rustls, false);
     let response = client
-        .post(VALIDATION_API_URL)
+        .post(validation_api_url)
         .header("Content-Type", "application/json")
         .body(payload.to_string())
         .timeout(std::time::Duration::from_secs(12))
