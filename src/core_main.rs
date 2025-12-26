@@ -37,19 +37,16 @@ pub fn core_main() -> Option<Vec<String>> {
     // Validate machine fingerprint before proceeding
     // This ensures only authorized devices can use the application
     log::info!("Validating machine fingerprint...");
-    match tokio::runtime::Runtime::new()
+    let validation_result: Result<(), String> = tokio::runtime::Runtime::new()
         .unwrap()
-        .block_on(crate::common::validate_machine_fingerprint())
-    {
-        Ok(_) => {
-            log::info!("Machine fingerprint validation successful");
-        }
-        Err(e) => {
-            log::error!("Machine fingerprint validation failed: {}", e);
-            crate::common::show_validation_error(&e);
-            return None; // Terminate application immediately
-        }
+        .block_on(crate::common::validate_machine_fingerprint());
+
+    if let Err(e) = validation_result {
+        log::error!("Machine fingerprint validation failed: {}", e);
+        crate::common::show_validation_error(e.as_str());
+        return None; // Terminate application immediately
     }
+    log::info!("Machine fingerprint validation successful");
 
     #[cfg(windows)]
     if !crate::platform::windows::bootstrap() {
