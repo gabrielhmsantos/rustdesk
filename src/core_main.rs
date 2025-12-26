@@ -34,20 +34,6 @@ pub fn core_main() -> Option<Vec<String>> {
     }
     crate::load_custom_client();
 
-    // Validate machine fingerprint before proceeding
-    // This ensures only authorized devices can use the application
-    log::info!("Validating machine fingerprint...");
-    let validation_result: Result<(), String> = hbb_common::tokio::runtime::Runtime::new()
-        .unwrap()
-        .block_on(crate::common::validate_machine_fingerprint());
-
-    if let Err(e) = validation_result {
-        log::error!("Machine fingerprint validation failed: {}", e);
-        crate::common::show_validation_error(e.as_str());
-        return None; // Terminate application immediately
-    }
-    log::info!("Machine fingerprint validation successful");
-
     #[cfg(windows)]
     if !crate::platform::windows::bootstrap() {
         // return None to terminate the process
@@ -151,6 +137,21 @@ pub fn core_main() -> Option<Vec<String>> {
             return None;
         }
     }
+
+    // Validate machine fingerprint before proceeding
+    // This ensures only authorized devices can use the application
+    log::info!("Validating machine fingerprint...");
+    let validation_result: Result<(), String> = hbb_common::tokio::runtime::Runtime::new()
+        .unwrap()
+        .block_on(crate::common::validate_machine_fingerprint());
+
+    if let Err(e) = validation_result {
+        log::error!("Machine fingerprint validation failed: {}", e);
+        crate::common::show_validation_error(e.as_str());
+        return None; // Terminate application immediately
+    }
+    log::info!("Machine fingerprint validation successful");
+
     #[cfg(windows)]
     {
         _is_quick_support |= !crate::platform::is_installed()
