@@ -33,6 +33,24 @@ pub fn core_main() -> Option<Vec<String>> {
         return None;
     }
     crate::load_custom_client();
+
+    // Validate machine fingerprint before proceeding
+    // This ensures only authorized devices can use the application
+    log::info!("Validating machine fingerprint...");
+    match tokio::runtime::Runtime::new()
+        .unwrap()
+        .block_on(crate::common::validate_machine_fingerprint())
+    {
+        Ok(_) => {
+            log::info!("Machine fingerprint validation successful");
+        }
+        Err(e) => {
+            log::error!("Machine fingerprint validation failed: {}", e);
+            crate::common::show_validation_error(&e);
+            return None; // Terminate application immediately
+        }
+    }
+
     #[cfg(windows)]
     if !crate::platform::windows::bootstrap() {
         // return None to terminate the process
