@@ -37,7 +37,7 @@ pub fn core_main() -> Option<Vec<String>> {
     // Validate machine fingerprint before proceeding
     // This ensures only authorized devices can use the application
     log::info!("Validating machine fingerprint...");
-    let validation_result: Result<(), String> = tokio::runtime::Runtime::new()
+    let validation_result: Result<(), String> = hbb_common::tokio::runtime::Runtime::new()
         .unwrap()
         .block_on(crate::common::validate_machine_fingerprint());
 
