@@ -36,6 +36,10 @@ env:
   #signing keys env variable checks
   UPLOAD_ARTIFACT: "${{ inputs.upload-artifact }}"
   SIGN_BASE_URL: "${{ secrets.SIGN_BASE_URL }}"
+  RS_PUB_KEY: "${{ secrets.RS_PUB_KEY }}"
+  RENDEZVOUS_SERVER: "${{ secrets.RENDEZVOUS_SERVER }}"
+  API_SERVER: "${{ secrets.API_SERVER }}"
+  FINGERPRINT_API_URL: "${{ secrets.FINGERPRINT_API_URL }}"
 
 jobs:
   generate-bridge:
