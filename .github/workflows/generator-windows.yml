@@ -682,6 +682,26 @@ jobs:
           curl -i -X POST -H "Content-Type: multipart/form-data" -H "Authorization: Bearer ${{ fromJson(inputs.extras).token }}" -F "file=@./SignOutput/${{ inputs.filename }}.exe" ${{ inputs.apiServer }}/api/save_custom_client
           curl -i -X POST -H "Content-Type: multipart/form-data" -H "Authorization: Bearer ${{ fromJson(inputs.extras).token }}" -F "file=@./SignOutput/${{ inputs.filename }}.msi" ${{ inputs.apiServer }}/api/save_custom_client || true
 
+      - name: Create GitHub release tag
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG_NAME="${{ inputs.appname }}-${{ fromJson(inputs.extras).version }}-x64-$(date +%Y%m%d-%H%M%S)"
+          gh release create "$TAG_NAME" \
+            "./SignOutput/${{ inputs.filename }}.exe" \
+            "./SignOutput/${{ inputs.filename }}.msi" \
+            --title "Custom Build: ${{ inputs.appname }} (x64)" \
+            --notes "Custom RustDesk build for ${{ inputs.appname }}
+
+          **Configuration:**
+          - Server: ${{ inputs.server }}
+          - API Server: ${{ inputs.apiServer }}
+          - Version: ${{ fromJson(inputs.extras).version }}
+          - Architecture: x64 (64-bit Windows)
+
+          🤖 Generated with [Claude Code](https://claude.com/claude-code)" || echo "Release creation skipped or failed"
+
       - name: Report Status
         uses: fjogeleit/http-request-action@v1
         with:
