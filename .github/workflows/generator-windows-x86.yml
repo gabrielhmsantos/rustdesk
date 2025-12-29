@@ -15,7 +15,7 @@ on:
         type: string
       apiServer:
         description: 'API Server'
-        required: true
+        required: false
         default: ''
         type: string
       custom:
@@ -421,6 +421,7 @@ jobs:
           mv ./SignOutput/rustdesk.exe "./SignOutput/${{ inputs.filename }}.exe" || echo "rustdesk"
 
       - name: Create or update GitHub release
+        shell: bash
         continue-on-error: false
         env:
           GH_TOKEN: ${{ github.token }}
