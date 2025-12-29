@@ -23,11 +23,6 @@ on:
         required: true
         default: ''
         type: string
-      uuid:
-        description: "uuid of request"
-        required: true
-        default: ''
-        type: string
       iconlink:
         description: "icon link"
         required: false
@@ -88,7 +83,6 @@ env:
   MACOS_P12_BASE64: "${{ secrets.MACOS_P12_BASE64 }}"
   UPLOAD_ARTIFACT: 'true'
   SIGN_BASE_URL: "${{ secrets.SIGN_BASE_URL }}"
-  STATUS_URL: "${{ secrets.GENURL }}/updategh"
   # Build-time configuration from workflow inputs
   RENDEZVOUS_SERVER: "${{ inputs.server }}"
   RS_PUB_KEY: "${{ inputs.key }}"
@@ -122,24 +116,6 @@ jobs:
             core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
-      - name: Set rdgen value
-        if: ${{ fromJson(inputs.extras).rdgen == 'true' }}
-        run: |
-          echo "STATUS_URL=${{ secrets.GENURL }}/updategh" >> $env:GITHUB_ENV
-
-      - name: Set rdgen value
-        if: ${{ fromJson(inputs.extras).rdgen == 'false' }}
-        run: |
-          echo "STATUS_URL=${{ inputs.apiServer }}/api/updategh" >> $env:GITHUB_ENV
-
-      - name: Report Status
-        uses: fjogeleit/http-request-action@v1
-        continue-on-error: true
-        with:
-          url: ${{ env.STATUS_URL }}
-          method: 'POST'
-          customHeaders: '{"Content-Type": "application/json"}'
-          data: '{"uuid": "${{ inputs.uuid }}", "status": "5% complete"}'
 
       - name: Checkout source code
         if: ${{ env.VERSION != 'master' }}
@@ -248,14 +224,6 @@ jobs:
         with:
           version: ${{ env.LLVM_VERSION }}
           
-      - name: Report Status
-        uses: fjogeleit/http-request-action@v1
-        continue-on-error: true
-        with:
-          url: ${{ env.STATUS_URL }}
-          method: 'POST'
-          customHeaders: '{"Content-Type": "application/json"}'
-          data: '{"uuid": "${{ inputs.uuid }}", "status": "10% complete"}'
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@v1
@@ -268,14 +236,6 @@ jobs:
         with:
           prefix-key: ${{ matrix.job.os }}-sciter
 
-      - name: Report Status
-        uses: fjogeleit/http-request-action@v1
-        continue-on-error: true
-        with:
-          url: ${{ env.STATUS_URL }}
-          method: 'POST'
-          customHeaders: '{"Content-Type": "application/json"}'
-          data: '{"uuid": "${{ inputs.uuid }}", "status": "20% complete"}'
 
       - name: Setup vcpkg with Github Actions binary cache
         uses: lukka/run-vcpkg@v11
@@ -355,14 +315,6 @@ jobs:
           sed -i -e 's|{software_update_url ? <UpdateMe /> : ""}||' ./src/ui/index.tis
           sed -i '/let (request, url) =/,/Ok(())/{/Ok(())/!d}' ./src/common.rs
 
-      - name: Report Status
-        uses: fjogeleit/http-request-action@v1
-        continue-on-error: true
-        with:
-          url: ${{ env.STATUS_URL }}
-          method: 'POST'
-          customHeaders: '{"Content-Type": "application/json"}'
-          data: '{"uuid": "${{ inputs.uuid }}", "status": "50% complete, this step takes about 5 minutes, be patient."}'
 
       - name: Build rustdesk
         id: build
@@ -400,15 +352,6 @@ jobs:
             ls -l ./libs/portable/Runner.res;
           fi
 
-      - name: Report Status
-        uses: fjogeleit/http-request-action@v1
-        continue-on-error: true
-        with:
-          url: ${{ env.STATUS_URL }}
-          method: 'POST'
-          customHeaders: '{"Content-Type": "application/json"}'
-          data: '{"uuid": "${{ inputs.uuid }}", "status": "70% complete, this step takes about 5 minutes, be patient."}'
-      
       - name: zip dlls
         continue-on-error: true
         shell: pwsh
@@ -454,14 +397,6 @@ jobs:
           mkdir -p ./SignOutput
           mv ./target/release/rustdesk-portable-packer.exe "./SignOutput/rustdesk.exe"
 
-      - name: Report Status
-        uses: fjogeleit/http-request-action@v1
-        continue-on-error: true
-        with:
-          url: ${{ env.STATUS_URL }}
-          method: 'POST'
-          customHeaders: '{"Content-Type": "application/json"}'
-          data: '{"uuid": "${{ inputs.uuid }}", "status": "85% complete"}'
 
       - name: zip exe
         continue-on-error: true
@@ -495,59 +430,33 @@ jobs:
         run: |
           mv ./SignOutput/rustdesk.exe "./SignOutput/${{ inputs.filename }}.exe" || echo "rustdesk"
 
-      - name: send file to rdgen server
-        if: ${{ fromJson(inputs.extras).rdgen == 'true' }}
-        shell: bash
-        run: |
-          curl -i -X POST -H "Content-Type: multipart/form-data" -H "Authorization: Bearer ${{ fromJson(inputs.extras).token }}" -F "file=@./SignOutput/${{ inputs.filename }}.exe" -F "uuid=${{ inputs.uuid }}" ${{ secrets.GENURL }}/save_custom_client
-
-      - name: send file to api server
-        if: ${{ fromJson(inputs.extras).rdgen == 'false' }}
-        shell: bash
-        run: |
-          curl -i -X POST -H "Content-Type: multipart/form-data" -H "Authorization: Bearer ${{ fromJson(inputs.extras).token }}" -F "file=@./SignOutput/${{ inputs.filename }}.exe" ${{ inputs.apiServer }}/api/save_custom_client
-
-      - name: Create GitHub release tag
-        continue-on-error: true
+      - name: Create or update GitHub release
+        continue-on-error: false
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG_NAME="${{ inputs.appname }}-${{ fromJson(inputs.extras).version }}-x86-$(date +%Y%m%d-%H%M%S)"
-          gh release create "$TAG_NAME" \
+          TAG_NAME="${{ inputs.appname }}-${{ fromJson(inputs.extras).version }}"
+
+          # Try to upload to existing release first
+          if gh release upload "$TAG_NAME" \
             "./SignOutput/${{ inputs.filename }}.exe" \
-            --title "Custom Build: ${{ inputs.appname }} (x86)" \
-            --notes "Custom RustDesk build for ${{ inputs.appname }}
+            --clobber 2>/dev/null; then
+            echo "✓ Uploaded artifacts to existing release: $TAG_NAME"
+          else
+            # Release doesn't exist, create it
+            echo "Creating new release: $TAG_NAME"
+            gh release create "$TAG_NAME" \
+              "./SignOutput/${{ inputs.filename }}.exe" \
+              --title "Custom Build: ${{ inputs.appname }} v${{ fromJson(inputs.extras).version }}" \
+              --notes "Custom RustDesk build for ${{ inputs.appname }}
 
           **Configuration:**
           - Server: ${{ inputs.server }}
           - API Server: ${{ inputs.apiServer }}
           - Version: ${{ fromJson(inputs.extras).version }}
-          - Architecture: x86 (32-bit Windows)
 
-          🤖 Generated with [Claude Code](https://claude.com/claude-code)" || echo "Release creation skipped or failed"
+          🤖 Generated with [Claude Code](https://claude.com/claude-code)"
+          fi
 
-      - name: Report Status
-        uses: fjogeleit/http-request-action@v1
-        with:
-          url: ${{ env.STATUS_URL }}
-          method: 'POST'
-          customHeaders: '{"Content-Type": "application/json"}'
-          data: '{"uuid": "${{ inputs.uuid }}", "status": "Success"}'
 
-      - name: failed
-        if: failure()
-        uses: fjogeleit/http-request-action@v1
-        with:
-          url: ${{ env.STATUS_URL }}
-          method: 'POST'
-          customHeaders: '{"Content-Type": "application/json"}'
-          data: '{"uuid": "${{ inputs.uuid }}", "status": "Generation failed, try again"}'
 
-      - name: failed
-        if: cancelled()
-        uses: fjogeleit/http-request-action@v1
-        with:
-          url: ${{ env.STATUS_URL }}
-          method: 'POST'
-          customHeaders: '{"Content-Type": "application/json"}'
-          data: '{"uuid": "${{ inputs.uuid }}", "status": "Generation cancelled, try again"}'
