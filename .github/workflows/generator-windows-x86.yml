@@ -200,6 +200,25 @@ jobs:
           Invoke-WebRequest -Uri https://raw.githubusercontent.com/bryangerlach/rdgen/refs/heads/master/.github/patches/allowCustom.diff -OutFile allowCustom.diff
           git apply allowCustom.diff
 
+      - name: customize brand colors
+        if: fromJson(inputs.extras).primaryColor != ''
+        continue-on-error: true
+        shell: bash
+        run: |
+          PRIMARY="${{ fromJson(inputs.extras).primaryColor }}"
+          ACCENT="${{ fromJson(inputs.extras).accentColor }}"
+          BUTTON="${{ fromJson(inputs.extras).buttonColor }}"
+
+          if [ -n "$BUTTON" ]; then
+            echo "Setting Sciter button color to #$BUTTON"
+            sed -i -e "s|var(button): #2C8CFF|var(button): #$BUTTON|g" ./src/ui/common.css
+          fi
+
+          if [ -n "$ACCENT" ]; then
+            echo "Setting Sciter accent color to #$ACCENT"
+            sed -i -e "s|var(accent): #0071ff|var(accent): #$ACCENT|g" ./src/ui/common.css
+          fi
+
       - name: Install LLVM and Clang
         uses: rustdesk-org/install-llvm-action-32bit@master
         with:

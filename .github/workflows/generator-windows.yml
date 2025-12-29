@@ -233,6 +233,30 @@ jobs:
           Invoke-WebRequest -Uri https://raw.githubusercontent.com/bryangerlach/rdgen/refs/heads/master/.github/patches/removeSetupServerTip.diff -OutFile removeSetupServerTip.diff
           git apply removeSetupServerTip.diff
 
+      - name: customize brand colors
+        if: fromJson(inputs.extras).primaryColor != ''
+        continue-on-error: true
+        shell: bash
+        run: |
+          PRIMARY="${{ fromJson(inputs.extras).primaryColor }}"
+          ACCENT="${{ fromJson(inputs.extras).accentColor }}"
+          WARN="${{ fromJson(inputs.extras).warnColor }}"
+
+          if [ -n "$PRIMARY" ]; then
+            echo "Setting Flutter primary color to #$PRIMARY"
+            sed -i -e "s|primary: Colors\.blue|primary: Color(0xFF$PRIMARY)|g" ./flutter/lib/common.dart
+          fi
+
+          if [ -n "$ACCENT" ]; then
+            echo "Setting Flutter accent color to #$ACCENT"
+            sed -i -e "s|accent = Color(0xFF0071FF)|accent = Color(0xFF$ACCENT)|g" ./flutter/lib/common.dart
+          fi
+
+          if [ -n "$WARN" ]; then
+            echo "Setting warning color to #$WARN"
+            sed -i -e "s|Color\.fromARGB(255, 245, 133, 59)|Color(0xFF$WARN)|g" ./flutter/lib/consts.dart
+          fi
+
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v1
         with:
