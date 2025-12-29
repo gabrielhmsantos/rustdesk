@@ -124,15 +124,6 @@ jobs:
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
       - name: Checkout source code
-        if: ${{ env.VERSION != 'master' }}
-        uses: actions/checkout@v4
-        with:
-          repository: gabrielhmsantos/rustdesk
-          ref: refs/tags/${{ env.VERSION }}
-          submodules: recursive
-
-      - name: Checkout source code
-        if: ${{ env.VERSION == 'master' }}
         uses: actions/checkout@v4
         with:
           repository: gabrielhmsantos/rustdesk
@@ -533,7 +524,7 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Build msi
-        continue-on-error: true
+        continue-on-error: false
         if: env.UPLOAD_ARTIFACT == 'true'
         run: |
           $myappname = "${{ inputs.appname }}" -replace '\s','_'
