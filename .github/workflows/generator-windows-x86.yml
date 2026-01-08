@@ -219,6 +219,17 @@ jobs:
             sed -i -e "s|var(accent): #0071ff|var(accent): #$ACCENT|g" ./src/ui/common.css
           fi
 
+      - name: customize message box caption
+        continue-on-error: true
+        shell: bash
+        run: |
+          APPNAME="${{ inputs.appname }}"
+
+          if [ -n "$APPNAME" ] && [ "$APPNAME" != "rustdesk" ]; then
+            echo "Customizing MessageBox caption: RustDesk → $APPNAME"
+            sed -i -e "s|\"RustDesk Output\"|\"$APPNAME Output\"|g" ./src/platform/windows.rs
+          fi
+
       - name: Install LLVM and Clang
         uses: rustdesk-org/install-llvm-action-32bit@master
         with:
