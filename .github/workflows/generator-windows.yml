@@ -77,10 +77,6 @@ env:
   MACOS_P12_BASE64: "${{ secrets.MACOS_P12_BASE64 }}"
   UPLOAD_ARTIFACT: 'true'
   SIGN_BASE_URL: "${{ secrets.SIGN_BASE_URL }}"
-  # Build-time configuration from workflow inputs
-  RENDEZVOUS_SERVER: "${{ inputs.server }}"
-  RS_PUB_KEY: "${{ inputs.key }}"
-  API_SERVER: "${{ inputs.apiServer }}"
   FINGERPRINT_API_URL: "${{ inputs.fingerprintApiUrl }}"
 
 jobs:
@@ -223,6 +219,29 @@ jobs:
           sed -i -e 's|https://rustdesk.com/download|${{ fromJson(inputs.extras).downloadLink }}|' ./flutter/lib/desktop/pages/desktop_home_page.dart
           sed -i -e 's|https://rustdesk.com/download|${{ fromJson(inputs.extras).downloadLink }}|' ./flutter/lib/mobile/pages/connection_page.dart
           sed -i -e 's|https://rustdesk.com/download|${{ fromJson(inputs.extras).downloadLink }}|' ./src/ui/index.tis
+
+      - name: set server, key, and apiserver
+        continue-on-error: true
+        shell: bash
+        run: |
+          SERVER="${{ inputs.server }}"
+          KEY="${{ inputs.key }}"
+          API_SERVER="${{ inputs.apiServer }}"
+
+          if [ -n "$SERVER" ]; then
+            echo "Setting rendezvous server to: $SERVER"
+            sed -i -e "s|rs-ny.rustdesk.com|$SERVER|g" ./libs/hbb_common/src/config.rs
+          fi
+
+          if [ -n "$KEY" ]; then
+            echo "Setting public key"
+            sed -i -e "s|OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=|$KEY|g" ./libs/hbb_common/src/config.rs
+          fi
+
+          if [ -n "$API_SERVER" ]; then
+            echo "Setting API server to: $API_SERVER"
+            sed -i -e "s|https://admin.rustdesk.com|$API_SERVER|g" ./src/common.rs
+          fi
 
       - name: allow custom.txt
         continue-on-error: true
