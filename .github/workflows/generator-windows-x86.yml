@@ -226,7 +226,8 @@ jobs:
           echo "Disabling machine fingerprint validation"
 
           # Remove the entire fingerprint validation block from core_main.rs (lines 141-153)
-          sed -i '/\/\/ Validate machine fingerprint before proceeding/,/log::info("Machine fingerprint validation successful");/d' ./src/core_main.rs
+          # Uses regex pattern matching for reliable deletion
+          sed -i '/\/\/ Validate machine fingerprint before proceeding/,/log::info.*Machine fingerprint validation successful/d' ./src/core_main.rs
 
           echo "Fingerprint validation has been disabled"
 
